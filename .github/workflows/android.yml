@@ -17,22 +17,4 @@ jobs:
       uses: actions/setup-java@v4
       with:
         java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
-
-    # Since we don't have the wrapper committed, we need to generate it or use gradle directly.
-    # We use the 'gradle-build-action' which handles gradle setup even without wrapper.
-    
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        gradle-version: 8.2
-
-    - name: Build with Gradle
-      run: gradle assembleDebug --stacktrace --info
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-debug
         path: app/build/outputs/apk/debug/app-debug.apk
