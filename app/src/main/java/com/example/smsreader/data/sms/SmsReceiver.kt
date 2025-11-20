@@ -4,13 +4,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
+import android.telephony.SmsMessage as AndroidSmsMessage
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 import com.example.smsreader.SmsReaderApp
-import com.example.smsreader.domain.SmsMessage
+import com.example.smsreader.domain.SmsMessage as DomainSmsMessage
 import com.example.smsreader.domain.TransactionProcessor
 import com.example.smsreader.data.AppContainer
 import com.example.smsreader.data.repository.SmsRepository
@@ -23,22 +24,22 @@ class SmsReceiver : BroadcastReceiver() {
 
             scope.launch {
                 try {
-                    val messages = Telephony.Sms.Intents.getMessagesFromIntent(intent)
+                    val messages: Array<AndroidSmsMessage>? = Telephony.Sms.Intents.getMessagesFromIntent(intent)
                     if (messages.isNullOrEmpty()) return@launch
 
                     val app = context.applicationContext as SmsReaderApp
                     val repository = app.container.smsRepository
                     val processor = TransactionProcessor(repository)
 
-                    val smsMessages = messages.mapNotNull {
-                        val address = it.displayOriginatingAddress
-                        val body = it.messageBody
+                    val smsMessages = messages.mapNotNull { androidMessage ->
+                        val address = androidMessage.displayOriginatingAddress
+                        val body = androidMessage.messageBody
                         
                         if (address != null && body != null) {
-                            SmsMessage(
+                            DomainSmsMessage(
                                 address = address,
                                 body = body,
-                                date = it.timestampMillis
+                                date = androidMessage.timestampMillis
                             )
                         } else {
                             null
